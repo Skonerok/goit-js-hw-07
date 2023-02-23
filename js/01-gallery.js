@@ -5,24 +5,24 @@
 // 4. Відкриття модального вікна по кліку на елементі галереї. Для цього ознайомся з документацією і прикладами.
 // 5. Заміна значення атрибута src елемента <img> в модальному вікні перед відкриттям. 
 // Використовуй готову розмітку модального вікна із зображенням з прикладів бібліотеки basicLightbox.
+// 6. Додай закриття модального вікна після натискання клавіші Escape.
 
 
 import { galleryItems } from './gallery-items.js';
 // Change code below this line
 
 
-const galleryContainer = document.querySelector('.gallery');
-const cardSet = createGallery(galleryItems);
+const galleryContainerRef = document.querySelector('.gallery');
+// const cardSet = createGallery(galleryItems);
 
-galleryContainer.insertAdjacentHTML('beforeend', cardSet);
+galleryContainerRef.insertAdjacentHTML('beforeend', createGallery(galleryItems));
 
-galleryContainer.addEventListener('click', onGalleryContainerClick);
+galleryContainerRef.addEventListener('click', onGalleryContainerClick);
 
 function createGallery(galleryItems) {
 return galleryItems.map(({preview, original, description}) => {
     return `
-    <div class="gallery">
-        <div class="gallery__item">
+    <div class="gallery__item">
 <a class="gallery__link" 
 href="${original}">
 <img 
@@ -31,15 +31,32 @@ src="${preview}"
 data-source="${original}" 
 alt="${description}" />
 </a>
-        </div>
-    </div>
+</div>
     `
 }).join('');
-}
+};
 
 function onGalleryContainerClick(event) {
-    if(!event.target.classList.contains('gallery__item')) {
+    blockBrowserAction(event);
+
+    if (event.target.nodeName !== 'IMG') {
         return;
     }
-    console.log(event.target);
-}
+
+    // open modal
+    const instance = basicLightbox.create(`
+    <img src="${event.target.dataset.source}" width="800" height="600">
+`);
+    instance.show();
+
+    // close modal
+    galleryContainerRef.addEventListener('keydown', (evt) => {
+        if (evt.code === 'Escape') {
+            instance.close();
+        };
+    });
+};
+
+function blockBrowserAction(event) {
+    event.preventDefault();
+};
